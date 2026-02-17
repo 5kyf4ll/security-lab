@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+}
+
+.header {
+    padding: 16px;
+    text-align: center;
+    background: #020617;
+    border-bottom: 1px solid #1e293b;
+}
+
+.player-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.player-wrapper {
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    justify-content: center;
+}
+
+.rotator {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: black;
+    border-radius: 12px;
+    border: 2px solid #1e293b;
+
+    overflow: hidden;
+}
+
+/* 👇 clave total */
+.live-player {
+    max-width: 100%;
+    height: auto;          /* ← deja que la altura sea real */
+    object-fit: contain;
+
+    transition: transform 0.3s ease;
+}
+.toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+}
+
+.tool-btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #1e293b;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tool-btn:hover {
+    background: #334155;
+}
+
+.viewer-switch {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 0;
+}
+
+.switch-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    background: #1e293b;
+    cursor: pointer;
+}
+
+.switch-btn.active {
+    background: #2563eb;
+}
+
+.viewer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+    padding: 20px;
+}
+
+.viewer-item {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+}
+
+.thumb {
+    height: 70px;
+    background: #1e293b;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}

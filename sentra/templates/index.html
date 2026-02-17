@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentra LIVE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>Sentra LIVE</h1>
+    </header>
+
+    <!-- CONTENEDOR CENTRAL FLEX -->
+    <main class="main-layout">
+
+        <!-- Reproductor en vivo -->
+        <section class="player-section">
+            <div class="player-wrapper">
+                <div class="rotator" id="rotator">
+                    <img src="/video_feed" class="live-player" id="livePlayer">
+                </div>
+            </div>
+        </section>
+
+        <!-- Barra de herramientas -->
+        <section class="toolbar">
+            <button class="tool-btn" id="rotateCW">⟳ Girar horario</button>
+            <button class="tool-btn" id="rotateCCW">⟲ Girar antihorario</button>
+            <button class="tool-btn" id="captureBtn">📸 Captura</button>
+            <button class="tool-btn" id="recordBtn">⏺ Grabar</button>
+        </section>
+
+        <!-- Control de snapshots -->
+        <section class="snapshots-control">
+            <label>
+                Intervalo (seg):
+                <input type="number" id="intervalInput" min="1" value="5">
+            </label>
+
+            <button id="snapEnable">Activar Snapshots</button>
+            <button id="snapDisable">Desactivar</button>
+
+            <span id="snapStatus">Estado: OFF</span>
+        </section>
+
+        <!-- Switch -->
+        <section class="viewer-switch">
+            <button class="switch-btn active">Capturas</button>
+            <button class="switch-btn">Videos</button>
+        </section>
+
+        <!-- Visor -->
+        <section class="viewer-grid">
+            <div class="viewer-item">
+                <div class="thumb"></div>
+                <span>archivo_001.jpg</span>
+            </div>
+            <div class="viewer-item">
+                <div class="thumb"></div>
+                <span>archivo_002.jpg</span>
+            </div>
+            <div class="viewer-item">
+                <div class="thumb"></div>
+                <span>video_001.mp4</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS solo aquí -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
