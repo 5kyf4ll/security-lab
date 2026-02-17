@@ -35,6 +35,7 @@
         <!-- Control de snapshots -->
         <section class="snapshots-control">
             <label>
+                <b> Activar capturas automaticas: </b>
                 Intervalo (seg):
                 <input type="number" id="intervalInput" min="1" value="5">
             </label>
@@ -47,25 +48,12 @@
 
         <!-- Switch -->
         <section class="viewer-switch">
-            <button class="switch-btn active">Capturas</button>
-            <button class="switch-btn">Videos</button>
+            <button class="switch-btn active" data-mode="captures">Capturas</button>
+            <button class="switch-btn" data-mode="videos">Videos</button>
         </section>
 
         <!-- Visor -->
-        <section class="viewer-grid">
-            <div class="viewer-item">
-                <div class="thumb"></div>
-                <span>archivo_001.jpg</span>
-            </div>
-            <div class="viewer-item">
-                <div class="thumb"></div>
-                <span>archivo_002.jpg</span>
-            </div>
-            <div class="viewer-item">
-                <div class="thumb"></div>
-                <span>video_001.mp4</span>
-            </div>
-        </section>
+        <section class="viewer-grid" id="viewerGrid"></section>
 
     </main>
 

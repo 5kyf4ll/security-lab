@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from core.camera import Camera
 from core.streamer import video_feed
 from core.capture_worker import CaptureWorker
@@ -18,8 +18,14 @@ camera = Camera()
 capture_worker = CaptureWorker(camera)
 capture_worker.start()
 
-# 🎥 NUEVO recorder independiente del streaming
 recorder = VideoRecorder(camera, fps=15)
+
+# Carpetas de almacenamiento
+SCREENSHOTS_DIR = "data/screenshots"
+VIDEOS_DIR = "data/videos"
+
+os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+os.makedirs(VIDEOS_DIR, exist_ok=True)
 
 
 # --------------------------------------------------
@@ -35,7 +41,9 @@ def stream():
     return video_feed(camera)
 
 
+# --------------------------------------------------
 # 📸 CAPTURA MANUAL
+# --------------------------------------------------
 @app.route("/capture", methods=["POST"])
 def capture():
     frame = camera.get_frame()
@@ -43,30 +51,58 @@ def capture():
     if frame is None:
         return jsonify({"status": "error", "msg": "no frame"}), 500
 
-    save_dir = "data/screenshots"
-    os.makedirs(save_dir, exist_ok=True)
-
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"screenshot_{timestamp}.jpg"
-    path = os.path.join(save_dir, filename)
+    path = os.path.join(SCREENSHOTS_DIR, filename)
 
     cv2.imwrite(path, frame)
 
     return jsonify({"status": "ok", "file": filename})
 
 
-# ▶ INICIAR GRABACION
+# --------------------------------------------------
+# 🎥 GRABACION
+# --------------------------------------------------
 @app.route("/record/start", methods=["POST"])
 def record_start():
     ok, msg = recorder.start()
     return jsonify({"ok": ok, "msg": msg})
 
 
-# ⏹ DETENER GRABACION
 @app.route("/record/stop", methods=["POST"])
 def record_stop():
     ok, msg = recorder.stop()
     return jsonify({"ok": ok, "msg": msg})
+
+
+# --------------------------------------------------
+# 📂 LISTAR ARCHIVOS PARA EL VISOR
+# --------------------------------------------------
+@app.route("/files")
+def list_files():
+    screenshots = sorted(os.listdir(SCREENSHOTS_DIR))
+    videos = sorted(os.listdir(VIDEOS_DIR))
+
+    return jsonify({
+        "captures": screenshots,
+        "videos": videos
+    })
+
+
+# --------------------------------------------------
+# 🖼 SERVIR SCREENSHOTS
+# --------------------------------------------------
+@app.route("/screenshots/<path:filename>")
+def get_screenshot(filename):
+    return send_from_directory(SCREENSHOTS_DIR, filename)
+
+
+# --------------------------------------------------
+# 🎬 SERVIR VIDEOS
+# --------------------------------------------------
+@app.route("/videos/<path:filename>")
+def get_video(filename):
+    return send_from_directory(VIDEOS_DIR, filename)
 
 
 # --------------------------------------------------
@@ -106,7 +142,7 @@ def snapshots_status():
 def shutdown():
     print("\n[Sentra] Cerrando sistema...")
     capture_worker.stop()
-    recorder.stop()   # ← importante ahora
+    recorder.stop()
     camera.release()
 
 
