@@ -7,57 +7,57 @@
 </head>
 <body>
 
-    <!-- Header -->
     <header class="header">
         <h1>Sentra LIVE</h1>
     </header>
 
-    <!-- CONTENEDOR CENTRAL FLEX -->
     <main class="main-layout">
 
-        <!-- Reproductor en vivo -->
+        <!-- Reproductor -->
         <section class="player-section">
             <div class="player-wrapper">
+                <div id="recIndicator" class="rec-indicator hidden">
+                    <div class="rec-dot"></div>
+                    <small>GRABANDO</small>
+                </div>
                 <div class="rotator" id="rotator">
-                    <img src="/video_feed" class="live-player" id="livePlayer">
+                    <img src="/video_feed" class="live-player" id="livePlayer" alt="Streaming en vivo">
                 </div>
             </div>
         </section>
 
-        <!-- Barra de herramientas -->
+        <!-- Herramientas -->
         <section class="toolbar">
-            <button class="tool-btn" id="rotateCW">⟳ Girar horario</button>
-            <button class="tool-btn" id="rotateCCW">⟲ Girar antihorario</button>
-            <button class="tool-btn" id="captureBtn">📸 Captura</button>
-            <button class="tool-btn" id="recordBtn">⏺ Grabar</button>
+            <button class="tool-btn" id="rotateCW"><span>⟳</span> Girar 90°</button>
+            <button class="tool-btn" id="rotateCCW"><span>⟲</span> Girar -90°</button>
+            <button class="tool-btn" id="captureBtn"><span>📸</span> Captura</button>
+            <button class="tool-btn" id="recordBtn"><span>⏺</span> Grabar</button>
         </section>
 
-        <!-- Control de snapshots -->
+        <!-- Configuración Snapshots -->
         <section class="snapshots-control">
             <label>
-                <b> Activar capturas automaticas: </b>
-                Intervalo (seg):
+                <b>Capturas Automáticas:</b>
+                Intervalo (s):
                 <input type="number" id="intervalInput" min="1" value="5">
             </label>
-
-            <button id="snapEnable">Activar Snapshots</button>
-            <button id="snapDisable">Desactivar</button>
-
+            <button id="snapEnable" class="btn-action">Activar</button>
+            <button id="snapDisable" class="btn-action">Desactivar</button>
             <span id="snapStatus">Estado: OFF</span>
         </section>
 
-        <!-- Switch -->
-        <section class="viewer-switch">
-            <button class="switch-btn active" data-mode="captures">Capturas</button>
-            <button class="switch-btn" data-mode="videos">Videos</button>
+        <!-- Visor de Archivos -->
+        <section class="viewer-section">
+            <div class="viewer-switch">
+                <button class="switch-btn active" data-mode="captures">Capturas</button>
+                <button class="switch-btn" data-mode="videos">Videos</button>
+            </div>
+            <div class="viewer-grid" id="viewerGrid">
+                <!-- Se llena con JS -->
+            </div>
         </section>
 
-        <!-- Visor -->
-        <section class="viewer-grid" id="viewerGrid"></section>
-
     </main>
-
-    <!-- JS solo aquí -->
     <script src="/static/app.js"></script>
 </body>
 </html>

@@ -1,185 +1,141 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* ================= ROTACION PLAYER ================= */
+    
+    /* --- ESTADO GLOBAL --- */
     let rotation = 0;
+    let currentMode = "captures";
+    let isRecording = false;
 
     const player = document.getElementById("livePlayer");
     const rotator = document.getElementById("rotator");
+    const viewerGrid = document.getElementById("viewerGrid");
+    const recordBtn = document.getElementById("recordBtn");
+    const recIndicator = document.getElementById("recIndicator");
+    const snapStatus = document.getElementById("snapStatus");
 
+    /* --- ROTACIÓN --- */
     function applyRotation() {
         player.style.transform = `rotate(${rotation}deg)`;
-
-        rotator.style.aspectRatio =
-            Math.abs(rotation % 180) === 90 ? "9 / 16" : "16 / 9";
+        // Ajustar aspecto visual si es 90 o 270 grados
+        if (Math.abs(rotation % 180) === 90) {
+            rotator.style.aspectRatio = "9 / 16";
+        } else {
+            rotator.style.aspectRatio = "16 / 9";
+        }
     }
 
-    document.getElementById("rotateCW").onclick = () => {
-        rotation += 90;
-        applyRotation();
-    };
+    document.getElementById("rotateCW").onclick = () => { rotation += 90; applyRotation(); };
+    document.getElementById("rotateCCW").onclick = () => { rotation -= 90; applyRotation(); };
 
-    document.getElementById("rotateCCW").onclick = () => {
-        rotation -= 90;
-        applyRotation();
-    };
-
-
-    /* ================= VISOR DE ARCHIVOS ================= */
-
-    const viewerGrid = document.getElementById("viewerGrid");
-    const switchBtns = document.querySelectorAll(".switch-btn");
-
-    let currentMode = "captures";
-
+    /* --- CARGA DE ARCHIVOS --- */
     async function loadFiles() {
         try {
             const res = await fetch("/files");
+            if (!res.ok) throw new Error("Error en servidor");
             const data = await res.json();
 
             viewerGrid.innerHTML = "";
+            const files = currentMode === "captures" ? data.captures : data.videos;
 
-            const files = currentMode === "captures"
-                ? data.captures
-                : data.videos;
+            if (!files || files.length === 0) {
+                viewerGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; opacity: 0.5; padding: 20px;'>No hay archivos disponibles</p>";
+                return;
+            }
 
             files.slice().reverse().forEach(file => {
                 const item = document.createElement("div");
                 item.className = "viewer-item";
 
                 if (currentMode === "captures") {
-
                     item.innerHTML = `
-                        <img src="/screenshots/${file}" class="thumb-img">
+                        <img src="/screenshots/${file}" class="thumb-img" loading="lazy">
                         <span>${file}</span>
                     `;
-
-                    /* abrir en nueva pestaña */
-                    item.onclick = () => {
-                        window.open(`/screenshots/${file}`, "_blank");
-                    };
-
+                    item.onclick = () => window.open(`/screenshots/${file}`, "_blank");
                 } else {
-
                     item.innerHTML = `
-                        <div class="thumb-video-placeholder">🎬</div>
+                        <div class="thumb-placeholder">🎬</div>
                         <span>${file}</span>
                     `;
-
-                    /* descargar video */
                     item.onclick = () => {
                         const a = document.createElement("a");
                         a.href = `/videos/${file}`;
                         a.download = file;
-                        document.body.appendChild(a);
                         a.click();
-                        a.remove();
                     };
                 }
-
                 viewerGrid.appendChild(item);
             });
-
         } catch (err) {
-            console.warn("Error cargando archivos:", err);
+            console.error("Error cargando archivos:", err);
         }
     }
 
-    /* ===== SWITCH ===== */
-    switchBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-
-            switchBtns.forEach(b => b.classList.remove("active"));
+    /* --- SWITCH CAPTURAS/VIDEOS --- */
+    document.querySelectorAll(".switch-btn").forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-
-            currentMode = btn.dataset.mode;   // ← FIX REAL
+            currentMode = btn.dataset.mode;
             loadFiles();
-        });
+        };
     });
 
-
-    /* ================= CAPTURA ================= */
+    /* --- CAPTURA MANUAL --- */
     document.getElementById("captureBtn").onclick = async () => {
         try {
             const res = await fetch("/capture", { method: "POST" });
             const data = await res.json();
-
-            if (data.status === "ok") {
-                loadFiles(); // refresca visor
-            }
-        } catch (err) {
-            console.warn("Error en captura:", err);
-        }
+            if (data.status === "ok") loadFiles();
+        } catch (err) { console.error("Error en captura:", err); }
     };
 
-
-    /* ================= GRABACION ================= */
-    let recording = false;
-    const recordBtn = document.querySelector(".tool-btn:nth-child(4)");
-
+    /* --- GRABACIÓN --- */
     recordBtn.onclick = async () => {
-
+        const endpoint = isRecording ? "/record/stop" : "/record/start";
         try {
-            if (!recording) {
-                const res = await fetch("/record/start", { method: "POST" });
-                const data = await res.json();
+            const res = await fetch(endpoint, { method: "POST" });
+            const data = await res.json();
 
-                if (data.ok) {
-                    recording = true;
-                    recordBtn.textContent = "⏹ Detener";
-                }
-
-            } else {
-                const res = await fetch("/record/stop", { method: "POST" });
-                const data = await res.json();
-
-                if (data.ok) {
-                    recording = false;
-                    recordBtn.textContent = "⏺ Grabar";
-                    loadFiles();
-                }
+            if (data.ok || data.status === "ok") {
+                isRecording = !isRecording;
+                recordBtn.classList.toggle("recording-active", isRecording);
+                recIndicator.classList.toggle("hidden", !isRecording);
+                recordBtn.innerHTML = isRecording ? "<span>⏹</span> Detener" : "<span>⏺</span> Grabar";
+                if (!isRecording) loadFiles();
             }
-        } catch (err) {
-            console.warn("Error en grabacion:", err);
-        }
+        } catch (err) { console.error("Error en grabación:", err); }
     };
 
-
-    /* ================= SNAPSHOTS ================= */
-
-    async function updateStatus() {
-        const res = await fetch("/snapshots/status");
-        const data = await res.json();
-
-        document.getElementById("snapStatus").textContent =
-            data.enabled
-                ? `Estado: ON cada ${data.interval}s`
+    /* --- SNAPSHOTS AUTOMÁTICOS --- */
+    async function getSnapStatus() {
+        try {
+            const res = await fetch("/snapshots/status");
+            const data = await res.json();
+            snapStatus.textContent = data.enabled 
+                ? `ON (${data.interval}s)` 
                 : "Estado: OFF";
+            snapStatus.style.color = data.enabled ? "#4ade80" : "#94a3b8";
+        } catch (e) {}
     }
 
     document.getElementById("snapEnable").onclick = async () => {
         const interval = document.getElementById("intervalInput").value;
-
         await fetch("/snapshots/enable", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ interval })
         });
-
-        updateStatus();
+        getSnapStatus();
     };
 
     document.getElementById("snapDisable").onclick = async () => {
         await fetch("/snapshots/disable", { method: "POST" });
-        updateStatus();
+        getSnapStatus();
     };
 
-    updateStatus();
-
-
-    /* ===== AUTO-REFRESH ===== */
-    setInterval(loadFiles, 5000);
-
-    /* ===== INIT ===== */
+    /* --- INICIALIZACIÓN --- */
     loadFiles();
-
+    getSnapStatus();
+    // Refrescar lista cada 10 segundos automáticamente
+    setInterval(loadFiles, 10000);
 });
